@@ -35,7 +35,7 @@ namespace AspelViewServer
         public Form1()
         {
             InitializeComponent();
-            absolutePath = "C:\\Users\\Usuario 232\\Desktop\\AspelViewDB.csv";
+            absolutePath = AspelViewServer.Properties.Settings.Default.RUTACSV;
             result = new List<CvsVO>();
             socket = null;
             datoEnviar = 1;
@@ -44,11 +44,7 @@ namespace AspelViewServer
             dataT = new DataTable();
         }
         private void LlenarTabla(){
-            dataGridView1.AutoGenerateColumns = false;
-            //DataRow nuevaFila = dataT.NewRow();
-            dataT.Columns.Add("Equipo");
-            dataT.Columns.Add("IP");
-            dataT.Columns.Add("Puerto");
+            
             result.Clear();
             ReadInCSV();
             dataGridView1.DataSource = result;
@@ -85,6 +81,11 @@ namespace AspelViewServer
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            dataGridView1.AutoGenerateColumns = false;
+            //DataRow nuevaFila = dataT.NewRow();
+            dataT.Columns.Add("Equipo");
+            dataT.Columns.Add("IP");
+            dataT.Columns.Add("Puerto");
             LlenarTabla();
             BuscarServers();
             new Thread(Escuchador).Start();
@@ -114,7 +115,7 @@ namespace AspelViewServer
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Test" + ex.Message);
+                Console.WriteLine(ipDestino + " no responde");
             }
         }
 
@@ -145,6 +146,18 @@ namespace AspelViewServer
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             corriendo = false;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            NuevoRegistro nuevoRegistro = new NuevoRegistro();
+            nuevoRegistro.ShowDialog();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Modificar modificar = new Modificar();
+            modificar.ShowDialog();
         }
     }
 }

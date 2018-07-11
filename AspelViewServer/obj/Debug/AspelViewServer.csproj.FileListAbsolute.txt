@@ -9,3 +9,5 @@ C:\Users\Usuario 232\Documents\Visual Studio 2013\Projects\AspelViewServer\Aspel
 C:\Users\Usuario 232\Documents\Visual Studio 2013\Projects\AspelViewServer\AspelViewServer\obj\Debug\AspelViewServer.csproj.GenerateResource.Cache
 C:\Users\Usuario 232\Documents\Visual Studio 2013\Projects\AspelViewServer\AspelViewServer\obj\Debug\AspelViewServer.exe
 C:\Users\Usuario 232\Documents\Visual Studio 2013\Projects\AspelViewServer\AspelViewServer\obj\Debug\AspelViewServer.pdb
+C:\Users\Usuario 232\Documents\Visual Studio 2013\Projects\AspelViewServer\AspelViewServer\obj\Debug\AspelViewServer.NuevoRegistro.resources
+C:\Users\Usuario 232\Documents\Visual Studio 2013\Projects\AspelViewServer\AspelViewServer\obj\Debug\AspelViewServer.Modificar.resources
