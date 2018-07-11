@@ -13,6 +13,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Net;
 using System.Threading;
+using System.Net.NetworkInformation;
 
 namespace AspelViewServer
 {
@@ -31,6 +32,7 @@ namespace AspelViewServer
         int contadorEnvio;
         bool corriendo = false;
         DataTable dataT;
+        SocketAsyc socketAsyc;
         
         public Form1()
         {
@@ -42,6 +44,7 @@ namespace AspelViewServer
             buffer = new byte[100];
             dataEnviar = null;
             dataT = new DataTable();
+            socketAsyc = new SocketAsyc();
         }
         private void LlenarTabla(){
             
@@ -86,28 +89,48 @@ namespace AspelViewServer
             dataT.Columns.Add("Equipo");
             dataT.Columns.Add("IP");
             dataT.Columns.Add("Puerto");
+            socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+           // new Thread(Escuchador).Start();
+            
             LlenarTabla();
-            BuscarServers();
-            new Thread(Escuchador).Start();
+           // BuscarServers();
+            
 
         }
         private void BuscarServers()
         {
+            Ping Pings = new Ping();
+            int timeout = 10;
+
+           
+            
             try
             {
                 int i = 0;
                 while (i < result.Count)
                 {
-                    socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    
                     ipDestino = result[i].IpEquipo;
-                    puertoDestino = int.Parse(result[i].PuertoEquipo);
-                    puntoDestino = new IPEndPoint(IPAddress.Parse(ipDestino), puertoDestino);
-                    socket.Connect(puntoDestino);
+                    if (Pings.Send(ipDestino, timeout).Status == IPStatus.Success)
+                    {
+                        puertoDestino = int.Parse(result[i].PuertoEquipo);
+                        /*puntoDestino = new IPEndPoint(IPAddress.Parse(ipDestino), puertoDestino);
+                        socket.Connect(puntoDestino);
 
-                    dataEnviar = Encoding.Default.GetBytes("" + datoEnviar);
+                        dataEnviar = Encoding.Default.GetBytes("" + datoEnviar);
 
-                    contadorEnvio = socket.SendTo(dataEnviar, puntoDestino);
-                    Console.WriteLine("Enviado");
+                        socket.SendTo(dataEnviar, puntoDestino); */
+                        
+                        socketAsyc.StartClient(ipDestino,puertoDestino);
+                        Console.WriteLine("Enviado a " + ipDestino);
+                       // Thread.Sleep(300);
+                        //socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                           
+                    }
+                    else
+                    {
+                        Console.WriteLine(ipDestino + " está fuera de red.");   
+                    }
                     i++;
                 }
                 
@@ -137,7 +160,7 @@ namespace AspelViewServer
                 int contadorLeido = socket.Receive(buffer,0,buffer.Length,0);
                 string datosRecibidos = Encoding.Default.GetString(buffer, 0, contadorLeido);
                 Console.WriteLine("Recibí: " + datosRecibidos);
-                MessageBox.Show(datosRecibidos);
+                //MessageBox.Show(datosRecibidos);
                 //socket.Close(200);
             }
 
