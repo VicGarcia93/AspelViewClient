@@ -41,16 +41,25 @@ namespace AspelViewServer
         {
             if (!String.IsNullOrWhiteSpace(TxtIp.Text) && !String.IsNullOrWhiteSpace(TxtPuerto.Text) && !String.IsNullOrWhiteSpace(comboBox1.Text))
             {
-                var path = AspelViewServer.Properties.Settings.Default.RUTACSV;
+                
 
                 var direccionIP = TxtIp.Text;
                 var puerto = TxtPuerto.Text;
 
                 var nombreEquipo = comboBox1.SelectedItem.ToString();
 
-                var lines = File.ReadAllLines(path);
+                resultCsv[comboBox1.SelectedIndex].IpEquipo = direccionIP;
+                resultCsv[comboBox1.SelectedIndex].PuertoEquipo = puerto;
 
-                
+                using (TextWriter fileWriter = File.CreateText(rutaCSV))
+                {
+                    var csv = new CsvWriter(fileWriter);
+                    csv.WriteRecords(resultCsv);
+                    this.Dispose();
+                } 
+
+                //StreamWriter streamW = File.WriteAllLines(path,)
+                                
             }
             else
                 MessageBox.Show("Complete todos los campos");
@@ -90,6 +99,15 @@ namespace AspelViewServer
                 }
                 
             }
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string direccionIP = resultCsv[comboBox1.SelectedIndex].IpEquipo;
+            string puerto = resultCsv[comboBox1.SelectedIndex].PuertoEquipo;
+
+            TxtIp.Text = direccionIP;
+            TxtPuerto.Text = puerto;
         }
     }
 }

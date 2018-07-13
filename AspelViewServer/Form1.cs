@@ -133,7 +133,7 @@ namespace AspelViewServer
                     }
                     i++;
                 }
-                
+               
                 
             }
             catch (Exception ex)
@@ -175,12 +175,45 @@ namespace AspelViewServer
         {
             NuevoRegistro nuevoRegistro = new NuevoRegistro();
             nuevoRegistro.ShowDialog();
+            ReadInCSV();
+            dataGridView1.EndEdit();
+            dataGridView1.Refresh();
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
             Modificar modificar = new Modificar();
             modificar.ShowDialog();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+
+            for (int i = 0; i < dataGridView1.Rows.Count; i++)
+            {
+                if (dataGridView1.Rows[i].Cells[5].Value != null)
+                {
+                    if (dataGridView1.Rows[i].Cells[5].Value.ToString() == "True")
+                    {
+                        result.RemoveAt(i);
+                        i--;
+                        
+                       
+                    }
+                        
+                }
+              
+            }
+            using (TextWriter fileWriter = File.CreateText(absolutePath))
+            {
+                var csv = new CsvWriter(fileWriter);
+                csv.WriteRecords(result);
+
+            }
+            dataGridView1.EndEdit();
+
+            dataGridView1.Refresh();
+            
         }
     }
 }

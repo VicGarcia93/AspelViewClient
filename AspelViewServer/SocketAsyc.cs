@@ -13,14 +13,15 @@ namespace AspelViewServer
     class SocketAsyc
     {
         // ManualResetEvent instances signal completion.  
-        private static ManualResetEvent connectDone =
+        private ManualResetEvent connectDone =
             new ManualResetEvent(false);
-        private static ManualResetEvent sendDone =
+        private ManualResetEvent sendDone =
             new ManualResetEvent(false);
-        private static ManualResetEvent receiveDone =
+        private ManualResetEvent receiveDone =
             new ManualResetEvent(false);
         int portClient;
         string direccionIP;
+        bool estadoDeConexion = true;
         public SocketAsyc()
         {
            
@@ -30,8 +31,12 @@ namespace AspelViewServer
 
         public void StartClient(string ip, int puerto)
         {
+            
             direccionIP = ip;
             portClient = puerto;
+            connectDone = new ManualResetEvent(false);
+            sendDone = new ManualResetEvent(false);
+            receiveDone = new ManualResetEvent(false);
             // Connect to a remote device.  
             try
             {
@@ -49,37 +54,45 @@ namespace AspelViewServer
                 // Connect to the remote endpoint.  
                 client.BeginConnect(remoteEP,
                     new AsyncCallback(ConnectCallback), client);
+                
                 connectDone.WaitOne();
+                Console.WriteLine("Ya se ejecutó BeginConnect");
 
-                // Send test data to the remote device.  
-                Send(client, "1");
-                sendDone.WaitOne();
+                if (estadoDeConexion)
+                {
+                    // Send test data to the remote device.  
+                    Send(client, "1");
+                    sendDone.WaitOne();
 
-                // Receive the response from the remote device.  
-                Receive(client);
-                receiveDone.WaitOne();
+                    Console.WriteLine("Ya se ejecutó Send");
+                    // Receive the response from the remote device.  
+                    Receive(client);
+                    receiveDone.WaitOne();
+                    Console.WriteLine("Ya se ejecutó Receive");
+                    // Write the response to the console.  
+                    Console.WriteLine("Response received : {0}", response);
 
-                // Write the response to the console.  
-                Console.WriteLine("Response received : {0}", response);
-
-                // Release the socket.  
-                //client.Shutdown(SocketShutdown.Both);
-               // client.Close();
-               
+                    // Release the socket.  
+                    //client.Shutdown(SocketShutdown.Both);
+                    // client.Close();
+                    
+                }
+                estadoDeConexion = true;             
 
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine("BeginConnect {0}",e.ToString());
             }
         }
 
         private void ConnectCallback(IAsyncResult ar)
         {
+            Socket client = null;
             try
             {
                 // Retrieve the socket from the state object.  
-                Socket client = (Socket)ar.AsyncState;
+                 client = (Socket)ar.AsyncState;
 
                 // Complete the connection.  
                 client.EndConnect(ar);
@@ -92,7 +105,10 @@ namespace AspelViewServer
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                estadoDeConexion = false;
+                connectDone.Set();
+               
+                
             }
         }
 
@@ -146,7 +162,7 @@ namespace AspelViewServer
         private void Send(Socket client, String data)
         {
             // Convert the string data to byte data using ASCII encoding.  
-            byte[] byteData = Encoding.ASCII.GetBytes(data);
+            byte[] byteData = Encoding.Default.GetBytes(data);
 
             // Begin sending the data to the remote device.  
             client.BeginSend(byteData, 0, byteData.Length, 0,
@@ -173,6 +189,7 @@ namespace AspelViewServer
             }
         }
 
+        
        
     }
 

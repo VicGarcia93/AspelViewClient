@@ -43,6 +43,7 @@ namespace AspelViewServer
                     csvv.NextRecord();
                     
                 }
+                
                 this.Dispose();
             }else
                 MessageBox.Show("Complete todos los campos");
