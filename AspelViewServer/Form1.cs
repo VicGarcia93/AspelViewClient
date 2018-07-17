@@ -33,6 +33,8 @@ namespace AspelViewServer
         bool corriendo = false;
         DataTable dataT;
         SocketAsyc socketAsyc;
+        string respuesta;
+        string []respuestaSistemas;
         
         public Form1()
         {
@@ -45,16 +47,28 @@ namespace AspelViewServer
             dataEnviar = null;
             dataT = new DataTable();
             socketAsyc = new SocketAsyc();
+            respuesta = String.Empty;
+            respuestaSistemas = new string[]{"0","0","0"};
         }
         private void LlenarTabla(){
-            
-            result.Clear();
+            dataGridView1.DataSource = null;
             ReadInCSV();
             dataGridView1.DataSource = result;
             foreach (DataGridViewColumn columna in dataGridView1.Columns)
             {
-                columna.Width = 118;
+                columna.Width = 90;
             }
+
+            dataGridView1.Columns[6].Width = 50;
+            dataGridView1.Columns[1].Width = 130;
+
+            dataGridView1.ClearSelection();
+           
+            for (int i = 0; i < dataGridView1.Columns.Count; i++)
+            {
+                dataGridView1.Columns[i].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            }
+            dataGridView1.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
         }
 
         private void btnBuscar_Click(object sender, EventArgs e)
@@ -70,10 +84,11 @@ namespace AspelViewServer
              using (TextReader fileReader = File.OpenText(absolutePath)) {
              var csv = new CsvReader(fileReader);
              //csv.Configuration.HasHeaderRecord = true;
+             result.Clear();
              csv.Read();
              while (csv.Read()) {
 
-                 result.Add(new CvsVO() { NombreEquipo = csv[0], IpEquipo = csv[1], PuertoEquipo = csv[2] });
+                 result.Add(new CvsVO() { NombreEquipo = csv[0], Usuario = csv[3], IpEquipo = csv[1], PuertoEquipo = csv[2] });
              }
            }
        
@@ -91,8 +106,13 @@ namespace AspelViewServer
             dataT.Columns.Add("Puerto");
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
            // new Thread(Escuchador).Start();
+            // primero asignar las columnas como no sortables, osea, no ordenables
+            //dataGridView1.Columns[""].SortMode = DataGridViewColumnSortMode.NotSortable;
+
+            // segundo asignarle que se centre el texto de la columna
             
             LlenarTabla();
+           
            // BuscarServers();
             
 
@@ -101,8 +121,6 @@ namespace AspelViewServer
         {
             Ping Pings = new Ping();
             int timeout = 10;
-
-           
             
             try
             {
@@ -121,8 +139,17 @@ namespace AspelViewServer
 
                         socket.SendTo(dataEnviar, puntoDestino); */
                         
-                        socketAsyc.StartClient(ipDestino,puertoDestino);
+                        respuesta = socketAsyc.StartClient(ipDestino,puertoDestino);
                         Console.WriteLine("Enviado a " + ipDestino);
+                        if(!String.IsNullOrEmpty(respuesta))
+                            respuestaSistemas = respuesta.Split(',');
+                        else
+                            respuestaSistemas = new String[] { "0", "0", "0" };
+
+                        Console.WriteLine(respuestaSistemas[0]);
+                        respuesta = String.Empty;
+                        
+
                        // Thread.Sleep(300);
                         //socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                            
@@ -131,6 +158,11 @@ namespace AspelViewServer
                     {
                         Console.WriteLine(ipDestino + " está fuera de red.");   
                     }
+                    dataGridView1.Rows[i].Cells[3].Value = respuestaSistemas[0];
+                    dataGridView1.Rows[i].Cells[4].Value = respuestaSistemas[1];
+                    dataGridView1.Rows[i].Cells[5].Value = respuestaSistemas[2];
+
+                    
                     i++;
                 }
                
@@ -138,7 +170,7 @@ namespace AspelViewServer
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ipDestino + " no responde");
+                Console.WriteLine(ipDestino + " no responde" + ex.Message);
             }
         }
 
@@ -175,30 +207,36 @@ namespace AspelViewServer
         {
             NuevoRegistro nuevoRegistro = new NuevoRegistro();
             nuevoRegistro.ShowDialog();
-            ReadInCSV();
-            dataGridView1.EndEdit();
-            dataGridView1.Refresh();
+            LlenarTabla();
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
             Modificar modificar = new Modificar();
-            modificar.ShowDialog();
+            int filaSeleccionada = dataGridView1.CurrentRow.Index;
+
+           
+            modificar.SetSeleccionDGV(filaSeleccionada);
+            
+            modificar.ShowDialog(this);
+            LlenarTabla();
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-
+            int j = -1;
             for (int i = 0; i < dataGridView1.Rows.Count; i++)
             {
+                j++;
                 if (dataGridView1.Rows[i].Cells[5].Value != null)
                 {
                     if (dataGridView1.Rows[i].Cells[5].Value.ToString() == "True")
                     {
-                        result.RemoveAt(i);
-                        i--;
-                        
-                       
+                        Console.WriteLine("Remueve...{0} ", dataGridView1.Rows[i].Cells[5].Value.ToString());
+                        Console.WriteLine(i.ToString());
+                        result.RemoveAt(j);
+                        j--;
+                                              
                     }
                         
                 }
@@ -210,10 +248,9 @@ namespace AspelViewServer
                 csv.WriteRecords(result);
 
             }
-            dataGridView1.EndEdit();
-
-            dataGridView1.Refresh();
-            
+            LlenarTabla();
         }
+
+        
     }
 }

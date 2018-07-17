@@ -37,7 +37,7 @@ namespace AspelViewServer
             if(!String.IsNullOrWhiteSpace(TxtIp.Text) && !String.IsNullOrWhiteSpace(TxtPuerto.Text) && !String.IsNullOrWhiteSpace(TxtNombre.Text)){
                 using (TextWriter fileWriter = File.AppendText(rutaCSV))
                 {
-                    CvsVO nuevo = new CvsVO() { NombreEquipo = TxtNombre.Text, IpEquipo = TxtIp.Text, PuertoEquipo = TxtPuerto.Text };
+                    CvsVO nuevo = new CvsVO() { NombreEquipo = TxtNombre.Text, Usuario = txtUsuario.Text, IpEquipo = TxtIp.Text, PuertoEquipo = TxtPuerto.Text };
                     var csvv = new CsvWriter(fileWriter);
                     csvv.WriteRecord(nuevo);
                     csvv.NextRecord();

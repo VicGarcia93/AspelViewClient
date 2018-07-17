@@ -20,6 +20,7 @@ namespace AspelViewServer
         {
             InitializeComponent();
             rutaCSV = AspelViewServer.Properties.Settings.Default.RUTACSV;
+            LlenarCombo();
         }
 
         private void TxtNombre_TextChanged(object sender, EventArgs e)
@@ -48,8 +49,12 @@ namespace AspelViewServer
 
                 var nombreEquipo = comboBox1.SelectedItem.ToString();
 
+                var usuario = txtUsuario.Text;
+
                 resultCsv[comboBox1.SelectedIndex].IpEquipo = direccionIP;
                 resultCsv[comboBox1.SelectedIndex].PuertoEquipo = puerto;
+                resultCsv[comboBox1.SelectedIndex].Usuario = usuario;
+                resultCsv[comboBox1.SelectedIndex].NombreEquipo = nombreEquipo;
 
                 using (TextWriter fileWriter = File.CreateText(rutaCSV))
                 {
@@ -82,6 +87,29 @@ namespace AspelViewServer
 
         private void Modificar_Load(object sender, EventArgs e)
         {
+            
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ObtenerDatosSegunIndiceCB();
+        }
+        public void SetSeleccionDGV(int index)
+        {
+            comboBox1.SelectedIndex = index;
+        }
+
+        private void ObtenerDatosSegunIndiceCB()
+        {
+            string direccionIP = resultCsv[comboBox1.SelectedIndex].IpEquipo;
+            string puerto = resultCsv[comboBox1.SelectedIndex].PuertoEquipo;
+            string usuario = resultCsv[comboBox1.SelectedIndex].Usuario;
+            TxtIp.Text = direccionIP;
+            TxtPuerto.Text = puerto;
+            txtUsuario.Text = usuario;
+        }
+        private void LlenarCombo()
+        {
             using (TextReader fileReader = File.OpenText(rutaCSV))
             {
                 resultCsv = new List<CvsVO>();
@@ -91,23 +119,14 @@ namespace AspelViewServer
                 while (csv.Read())
                 {
 
-                    resultCsv.Add(new CvsVO() { NombreEquipo = csv[0], IpEquipo = csv[1], PuertoEquipo= csv[2]});
+                    resultCsv.Add(new CvsVO() { NombreEquipo = csv[0], Usuario = csv[3], IpEquipo = csv[1], PuertoEquipo = csv[2] });
                 }
                 for (int i = 0; i < resultCsv.Count; i++)
                 {
-                    comboBox1.Items.Add(resultCsv[i].NombreEquipo);    
+                    comboBox1.Items.Add(resultCsv[i].NombreEquipo);
                 }
-                
+
             }
-        }
-
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            string direccionIP = resultCsv[comboBox1.SelectedIndex].IpEquipo;
-            string puerto = resultCsv[comboBox1.SelectedIndex].PuertoEquipo;
-
-            TxtIp.Text = direccionIP;
-            TxtPuerto.Text = puerto;
         }
     }
 }

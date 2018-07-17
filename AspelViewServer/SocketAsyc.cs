@@ -22,6 +22,7 @@ namespace AspelViewServer
         int portClient;
         string direccionIP;
         bool estadoDeConexion = true;
+        int banderaConectado =0;
         public SocketAsyc()
         {
            
@@ -29,7 +30,7 @@ namespace AspelViewServer
         // The response from the remote device.  
         private String response = String.Empty;
 
-        public void StartClient(string ip, int puerto)
+        public string StartClient(string ip, int puerto)
         {
             
             direccionIP = ip;
@@ -37,9 +38,11 @@ namespace AspelViewServer
             connectDone = new ManualResetEvent(false);
             sendDone = new ManualResetEvent(false);
             receiveDone = new ManualResetEvent(false);
+            response = String.Empty;
             // Connect to a remote device.  
             try
             {
+                
                 // Establish the remote endpoint for the socket.  
                 // The name of the   
                 // remote device is "host.contoso.com".  
@@ -54,7 +57,9 @@ namespace AspelViewServer
                 // Connect to the remote endpoint.  
                 client.BeginConnect(remoteEP,
                     new AsyncCallback(ConnectCallback), client);
-                
+                Console.WriteLine("llama a connectCallBack");
+                Console.WriteLine(banderaConectado);
+               
                 connectDone.WaitOne();
                 Console.WriteLine("Ya se ejecutó BeginConnect");
 
@@ -77,13 +82,16 @@ namespace AspelViewServer
                     // client.Close();
                     
                 }
-                estadoDeConexion = true;             
+                estadoDeConexion = true;
+               
 
             }
             catch (Exception e)
             {
                 Console.WriteLine("BeginConnect {0}",e.ToString());
+                 
             }
+                 return response;
         }
 
         private void ConnectCallback(IAsyncResult ar)
@@ -91,11 +99,14 @@ namespace AspelViewServer
             Socket client = null;
             try
             {
+                Console.WriteLine("Entrando a ConnectCallBack");
                 // Retrieve the socket from the state object.  
                  client = (Socket)ar.AsyncState;
-
-                // Complete the connection.  
-                client.EndConnect(ar);
+                 Console.WriteLine("ConnectCallBack");
+                // Complete the connection. 
+                 //new Thread(Esperando).Start();
+              
+                 client.EndConnect(ar);
 
                 Console.WriteLine("Socket connected to {0}",
                     client.RemoteEndPoint.ToString());
@@ -105,10 +116,9 @@ namespace AspelViewServer
             }
             catch (Exception e)
             {
+                Console.WriteLine("Error en ConnectCallBack");
                 estadoDeConexion = false;
-                connectDone.Set();
-               
-                
+                connectDone.Set();  
             }
         }
 
@@ -139,7 +149,7 @@ namespace AspelViewServer
                 StateObject state = (StateObject)ar.AsyncState;
                 
                 Socket client = state.workSocket;
-
+                Console.WriteLine("Receive.......");
                 // Read data from the remote device.  
                 int bytesRead = client.EndReceive(ar);
                 Console.WriteLine(bytesRead.ToString());
@@ -156,6 +166,8 @@ namespace AspelViewServer
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
+                Console.WriteLine("Error en ReceiveCallBack");
+                receiveDone.Set();
             }
         }
 
@@ -186,10 +198,16 @@ namespace AspelViewServer
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
+                Console.WriteLine("Error en SendCallBack");
             }
         }
 
-        
+        private void Esperando()
+        {
+            Thread.Sleep(50);
+            Console.WriteLine("Se acabó el tiempo");
+            connectDone.Set();
+        }
        
     }
 

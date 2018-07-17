@@ -12,6 +12,8 @@ namespace AspelViewServer
         public string IpEquipo{get;set;}
         public string PuertoEquipo { get; set; }
 
+        public string Usuario { get; set; }
+
         public CvsVO()
         {
             
