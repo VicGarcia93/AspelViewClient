@@ -127,7 +127,8 @@ namespace AspelViewServer
                 int i = 0;
                 while (i < result.Count)
                 {
-                    
+                   // respuesta = String.Empty;
+                    respuestaSistemas = new String[] { "0", "0", "0" };
                     ipDestino = result[i].IpEquipo;
                     if (Pings.Send(ipDestino, timeout).Status == IPStatus.Success)
                     {
@@ -143,11 +144,10 @@ namespace AspelViewServer
                         Console.WriteLine("Enviado a " + ipDestino);
                         if(!String.IsNullOrEmpty(respuesta))
                             respuestaSistemas = respuesta.Split(',');
-                        else
-                            respuestaSistemas = new String[] { "0", "0", "0" };
+                       
 
                         Console.WriteLine(respuestaSistemas[0]);
-                        respuesta = String.Empty;
+                        
                         
 
                        // Thread.Sleep(300);
